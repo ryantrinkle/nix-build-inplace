@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ "$1" = --help -o "$1" = -h ] ; then
+    2>&1 echo "Usage: $0 [ARGS...]"
+    2>&1 echo "ARGS will be passed to nix-shell"
+    exit 1
+fi
+
+nix-shell --pure "$@" --command "$(cat <<'EOF'
+mkdir -p tmp
+export NIX_BUILD_TOP="$PWD/tmp"
+export TMPDIR="$NIX_BUILD_TOP"
+export TEMPDIR="$NIX_BUILD_TOP"
+export TMP="$NIX_BUILD_TOP"
+export TEMP="$NIX_BUILD_TOP"
+
+export HOME=/homeless-shelter
+
+mkdir -p outputs
+for x in $outputs ; do
+  mkdir -p "outputs/$x"
+
+  # Replace the expected output paths with our mutable output paths
+  # everywhere they appear in the environment
+  eval "$(set | sed "s@${!x//@/\@}@$PWD/outputs/$x@g")"
+done
+
+# We want to overwrite old sources with new ones, but we don't want to
+eval "$(typeset -f unpackPhase | head -n -1 ; cat <<'ENDFUNC'
+    if [ "$sourceRoot" != src ] ; then
+        cp -aT "$sourceRoot" src
+        rm -rf "$sourceRoot"
+        sourceRoot=src
+    fi
+}
+ENDFUNC
+)"
+
+cd tmp
+genericBuild
+EOF
+)"
+
+ln -sfT outputs/out result
