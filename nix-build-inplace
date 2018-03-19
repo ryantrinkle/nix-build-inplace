@@ -7,7 +7,8 @@ if [ "$1" = --help -o "$1" = -h ] ; then
     exit 1
 fi
 
-nix-shell --pure "$@" --command "$(cat <<'EOF'
+DRV="$(nix-instantiate "$@")"
+nix-shell --pure -E "import $DRV" --command "$(cat <<'EOF'
 mkdir -p tmp
 export NIX_BUILD_TOP="$PWD/tmp"
 export TMPDIR="$NIX_BUILD_TOP"
