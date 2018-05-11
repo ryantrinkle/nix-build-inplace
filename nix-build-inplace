@@ -1,4 +1,5 @@
-#!/usr/bin/env bash
+#!/usr/bin/env nix-shell
+#!nix-shell -i bash -p bash coreutils
 set -euo pipefail
 
 if [ "$1" = --help -o "$1" = -h ] ; then
