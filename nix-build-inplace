@@ -2,7 +2,7 @@
 #!nix-shell -i bash -p bash coreutils
 set -euo pipefail
 
-if [ "$1" = --help -o "$1" = -h ] ; then
+if [ "$1" = --help ] || [ "$1" = -h ] ; then
     2>&1 echo "Usage: $0 [ARGS...]"
     2>&1 echo "ARGS will be passed to nix-shell"
     exit 1
